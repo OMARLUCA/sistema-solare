@@ -300,7 +300,7 @@ details.topic .tb{padding:0 12px 12px;font-size:13px;line-height:1.55;color:#e4e
 <script>
 window.SSVoice=(function(){
  var synth=window.speechSynthesis, ok=!!(synth&&window.SpeechSynthesisUtterance);
- var S={supported:ok,on:false,speaking:false,tag:null,rate:.9,pitch:.72,onstate:null};
+ var S={supported:ok,on:false,speaking:false,tag:null,rate:.95,pitch:1,onstate:null};
  var voice=null, keep=[], token=0;
  function emit(){ try{ if(S.onstate) S.onstate(); }catch(e){} }
  function pickVoice(){
@@ -310,9 +310,11 @@ window.SSVoice=(function(){
   list.forEach(function(v){
    if(!/^it/i.test(v.lang||"")) return;
    var n=(v.name||"").toLowerCase(), sc=100;
-   if(/luca|cosimo|diego|giuseppe|giorgio|marco|stefano|gianni|male|uomo/.test(n)) sc+=50;
-   if(/alice|federica|paola|silvia|elsa|isabella|francesca|chiara|elisa|female|donna|google italiano/.test(n)) sc-=50;
-   if(/premium|enhanced|neural|natural|online|wavenet|siri/.test(n)) sc+=10;
+   if(/luca|cosimo|diego|giuseppe|giorgio|marco|stefano|gianni|male|uomo/.test(n) && !/female/.test(n)) sc-=60;
+   if(/alice|federica|paola|silvia|elsa|isabella|francesca|chiara|elisa|female|donna|google italiano|google it/.test(n)) sc+=50;
+   if(/premium|enhanced|evoluta|migliorata|neural|natural|online|wavenet|siri/.test(n)) sc+=25;
+   if(/compact|compatta/.test(n)) sc-=8;
+   if(/isabella|elsa|alice/.test(n)) sc+=6;
    if(v.localService) sc+=1;
    if(sc>bs){bs=sc;best=v;}
   });
@@ -368,9 +370,9 @@ window.SSVoice=(function(){
    function adv(){ if(fired) return; fired=true; clearTimeout(wd); next(); }
    u.lang="it-IT";
    if(voice){ u.voice=voice; u.lang=voice.lang||"it-IT"; }
-   u.rate=S.rate; u.pitch=S.pitch; u.volume=1;
+   u.rate=S.rate*(1+(Math.random()-.5)*.05); u.pitch=S.pitch*(1+(Math.random()-.5)*.06); u.volume=1;
    u.onstart=function(){ if(my!==token) return; if(!started){ started=true; if(o.onstart) o.onstart(); } };
-   u.onend=function(){ if(my===token) adv(); };
+   u.onend=function(){ if(my===token) setTimeout(function(){ if(my===token) adv(); },130); };
    // rete di sicurezza: se il telefono non segnala la fine della frase, si va avanti lo stesso
    wd=setTimeout(function(){ if(my!==token||fired) return; try{ synth.cancel(); }catch(e){} adv(); }, Math.max(4000, txt.length*105/S.rate)+3000);
    u.onerror=function(ev){
